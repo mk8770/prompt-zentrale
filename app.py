@@ -128,6 +128,42 @@ def inject_address(text: str, address: str) -> str:
     return "\n".join(lines)
 
 
+def describe_social_link(url: str) -> str:
+    lowered = url.lower()
+    if "facebook.com" in lowered:
+        icon = "Facebook"
+    elif "instagram.com" in lowered:
+        icon = "Instagram"
+    elif "tiktok.com" in lowered:
+        icon = "TikTok"
+    elif "youtube.com" in lowered:
+        icon = "YouTube"
+    else:
+        icon = "Global link"
+    return f"Icon: {icon}, URL: {url}"
+
+
+def inject_social_links(text: str, links: list[str]) -> str:
+    filled = [link.strip() for link in links if link.strip()]
+    if not filled or CONTACT_MARKER not in text:
+        return text
+    array = "\n".join(f"- {describe_social_link(link)}" for link in filled)
+    block = (
+        "SOCIAL MEDIA ARRAY:\n"
+        f"{array}\n"
+        "The AI is strictly required to read the provided social media array. "
+        "For each item, render the exact matching SVG icon specified (do not hardcode only Facebook). "
+        "If multiple links are provided, render them as a beautiful, clean side-by-side icon list "
+        "in the footer/contact card."
+    )
+    lines = text.split("\n")
+    for index, line in enumerate(lines):
+        if line.startswith(CONTACT_MARKER):
+            lines.insert(index + 1, block)
+            break
+    return "\n".join(lines)
+
+
 def compile_prompt(
     master_content: str,
     category: dict,
@@ -136,6 +172,7 @@ def compile_prompt(
     address: str,
     vibe: str,
     features: str,
+    social_links: list[str],
 ) -> str:
     if SECTION_MARKER not in master_content:
         raise ValueError(f'The master prompt is missing "{SECTION_MARKER}".')
@@ -151,6 +188,7 @@ def compile_prompt(
     )
     compiled = apply_business_name(f"{core.rstrip()}\n\n{selected}", business_name)
     compiled = inject_address(compiled, address)
+    compiled = inject_social_links(compiled, social_links)
 
     vibe_text = vibe.strip()
     if vibe_text:
@@ -335,6 +373,31 @@ def inject_styles() -> None:
     )
 
 
+def render_social_links() -> list[str]:
+    if "social_links" not in st.session_state:
+        st.session_state.social_links = [""]
+
+    st.markdown("#### Social links")
+    entered: list[str] = []
+    for index in range(len(st.session_state.social_links)):
+        widget_key = f"social_link_{index}"
+        if widget_key not in st.session_state:
+            st.session_state[widget_key] = st.session_state.social_links[index]
+        entered.append(
+            st.text_input(
+                f"Social link {index + 1}",
+                key=widget_key,
+                placeholder="https://instagram.com/your-page",
+            )
+        )
+    st.session_state.social_links = entered
+
+    if st.button("➕ Add Social Link", width="stretch"):
+        st.session_state.social_links.append("")
+        st.rerun()
+    return entered
+
+
 def render_industry_tabs(categories: list[dict]) -> dict:
     if "industry" not in st.session_state:
         st.session_state.industry = categories[0]["number"]
@@ -427,6 +490,7 @@ def main() -> None:
         "4. Custom Features / Extra Rules (Optional)",
         placeholder="e.g., Add a weekly dart tournament section, set draft beers to 8 euros",
     )
+    social_links = render_social_links()
 
     flash = st.session_state.pop("flash", None)
     if flash:
@@ -445,6 +509,7 @@ def main() -> None:
             address,
             vibe,
             features,
+            social_links,
         )
     except ValueError as exc:
         st.error(str(exc))
