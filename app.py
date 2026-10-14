@@ -193,6 +193,21 @@ def inject_social_links(text: str, links: list[str]) -> str:
     return insert_after_contact(text, block)
 
 
+VISUAL_IDENTITY_DIRECTION = (
+    "🚨 VISUAL IDENTITY DIRECTION FROM REAL PHOTOS: The AI builder must create a UI that acts as a "
+    "direct digital twin of the customer's physical establishment. Use a dark-charcoal base if the "
+    "photo indicates a pub, map neon glow effects to the primary utility buttons if neon exists, and "
+    "strictly align card-surfaces to resemble authentic textures (like raw wood, brick, or matte metal) "
+    "shown in the reference imagery."
+)
+
+
+def visual_identity_block(reference_name: str | None) -> str:
+    if not reference_name:
+        return ""
+    return f"{VISUAL_IDENTITY_DIRECTION}\nReference image: {reference_name}\n\n"
+
+
 def compile_prompt(
     master_content: str,
     category: dict,
@@ -204,6 +219,7 @@ def compile_prompt(
     vibe: str,
     features: str,
     social_links: list[str],
+    reference_name: str | None = None,
 ) -> str:
     if SECTION_MARKER not in master_content:
         raise ValueError(f'The master prompt is missing "{SECTION_MARKER}".')
@@ -231,6 +247,10 @@ def compile_prompt(
             f"to match this specific aesthetic: {vibe_text}\n\n"
             f"{compiled}"
         )
+
+    reference = visual_identity_block(reference_name)
+    if reference:
+        compiled = f"{reference}{compiled}"
 
     feature_text = features.strip()
     if feature_text:
@@ -504,6 +524,7 @@ def main() -> None:
             st.write(f"Updated: {dt_helsinki.strftime('%d.%m.%Y - %H:%M')} Uhr")
         except Exception:
             st.write(f"Updated: {prompt['lastUpdated']}")
+        vibe_preview = st.empty()
         st.divider()
         st.caption(
             "Update Prompt appends the instruction to the selected industry "
@@ -525,8 +546,14 @@ def main() -> None:
         "6. Overall Feeling / Vibe",
         value="Grungy, authentic underground dive bar with raw aesthetic",
     )
+    uploaded_screenshot = st.file_uploader(
+        "8. Upload Bar Screenshot / Photo (AI Vibe Analyzer)",
+        type=["jpg", "jpeg", "png"],
+    )
+    if uploaded_screenshot is not None:
+        vibe_preview.image(uploaded_screenshot, caption="Vibe reference", width="stretch")
     features = st.text_area(
-        "7. Custom Features / Extra Rules (Optional)",
+        "9. Custom Features / Extra Rules (Optional)",
         placeholder="e.g., Add a weekly dart tournament section, set draft beers to 8 euros",
     )
 
@@ -550,6 +577,7 @@ def main() -> None:
             vibe,
             features,
             social_links,
+            uploaded_screenshot.name if uploaded_screenshot is not None else None,
         )
     except ValueError as exc:
         st.error(str(exc))

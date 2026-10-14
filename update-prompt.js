@@ -372,6 +372,35 @@ function applyFieldUpdate(prompt, section, updateText) {
   return { ...prompt, content };
 }
 
+function helsinkiTimestamp(now = new Date()) {
+  const wallParts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Helsinki",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    fractionalSecondDigits: 3,
+    hourCycle: "h23",
+  }).formatToParts(now);
+  const part = (type) => wallParts.find((item) => item.type === type).value;
+  const wall = `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}:${part("second")}.${part("fractionalSecond")}`;
+  const offsetLabel = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Helsinki",
+    timeZoneName: "longOffset",
+  }).formatToParts(now).find((item) => item.type === "timeZoneName").value.replace("GMT", "").trim();
+  let offset = offsetLabel;
+  if (offset === "" || offset === "Z") {
+    offset = "+00:00";
+  } else if (/^[+-]\d{1,2}$/.test(offset)) {
+    offset = `${offset[0]}${offset.slice(1).padStart(2, "0")}:00`;
+  } else if (/^[+-]\d{4}$/.test(offset)) {
+    offset = `${offset.slice(0, 3)}:${offset.slice(3)}`;
+  }
+  return `${wall}${offset}`;
+}
+
 function applyUpdate(db, { id, section, updateText }) {
   validateDatabase(db);
   assertJsonSafe(updateText, "updateText");
@@ -406,9 +435,7 @@ function applyUpdate(db, { id, section, updateText }) {
 
   updated.version = bumpVersion(current.version);
   const prompt = updated;
-  const helsinkiTime = new Date().toLocaleString("en-US", { timeZone: "Europe/Helsinki" });
-  const updatedTimestamp = new Date(helsinkiTime).toISOString();
-  prompt.lastUpdated = updatedTimestamp;
+  prompt.lastUpdated = helsinkiTimestamp();
   updated = orderPrompt(updated);
   next.prompts[index] = updated;
   validateDatabase(next);
