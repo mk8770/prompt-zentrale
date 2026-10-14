@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
@@ -89,6 +90,13 @@ def parse_categories(content: str) -> list[dict]:
 
 def industry_label(category: dict) -> str:
     return INDUSTRY_LABELS.get(category["number"], category["title"])
+
+
+def format_updated(timestamp: object) -> str:
+    if not isinstance(timestamp, str) or timestamp.strip() == "":
+        return ""
+    parsed = datetime.fromisoformat(timestamp.strip().replace("Z", "+00:00"))
+    return parsed.strftime("%d.%m.%Y - %H:%M Uhr")
 
 
 def category_block(category: dict) -> str:
@@ -333,7 +341,7 @@ def main() -> None:
         st.write("**Version**")
         st.code(str(master.get("version", "")), language="text")
         st.write("**Updated**")
-        st.code(str(master.get("lastUpdated", "")), language="text")
+        st.code(format_updated(master.get("lastUpdated", "")), language="text")
         st.divider()
         st.caption(
             "Update Prompt appends the instruction to the selected industry "
