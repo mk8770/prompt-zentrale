@@ -1,7 +1,7 @@
 # Universal Business Sales Demo Template
 
-**Version:** v1.0.4
-**Updated:** 14.10.2026 - 20:52 Uhr (Helsinki)
+**Version:** v1.0.5
+**Updated:** 14.10.2026 - 20:54 Uhr (Helsinki)
 
 ---
 
@@ -26,11 +26,15 @@ Rule B Story Shifting: For each theme, automatically generate unique headlines a
 Inline Admin Login Access: Place an Admin Login button directly next to the language switcher pill in the header. Clicking it opens a tiny inline credentials bar inside the navigation.
 Hardcoded Credentials: The password must be hardcoded strictly to 2026 to instantly unlock Edit Mode.
 
-SECTION 2: THE INLINE EDIT MODE
-Language-Specific Toggle: Place a small sticky toggle bar to switch between editing English and Finnish inline blocks.
-Inline Section Toggle: Provide an inline hide/show toggle badge next to the header of the Special Features section to collapse the layout seamlessly if hidden.
-Direct Inline CRUD: Edit headlines, descriptions, items, and marquee texts directly inline. Render small inline plus and cross icons next to list items for live page modification.
-Mobile-Friendly Inline Image Upload: Render an inline image icon next to editable images triggering a native file selector (Max 5MB, JPEG/PNG/WEBP). Custom uploads permanently lock that slot from automated theme-switching.
+SECTION 2: THE INLINE EDIT MODE & EVENT OVERRIDES
+- TOTAL ELEMENT EDITABILITY: When the presenter unlocks Edit Mode with password 2026, absolutely 100% of visible layout elements—including standard text, headers, marquee tickers, buttons, navigation links, list items, and prices—must become fully editable inline.
+- BLOCK STANDARD BROWSER BEHAVIOR (ANTI-NAVIGATION LAW): The JavaScript architecture must intercept and disable all default browser actions in edit mode. Clicking an active navigation link, utility button, or call-to-action anchor tag MUST NOT trigger web navigation or jump down the page. Use `e.preventDefault()` globally on all anchor and button clicks when edit mode is active.
+- INLINE FLOATING OPERATORS FOR LINKS & BUTTONS: When an editable Link or Button is clicked in edit mode, instead of navigating, render an instantaneous inline micro-floating input capsule directly over or adjacent to the clicked item. This capsule must feature two distinct text fields:
+  * Field A: To dynamically rewrite the visible Label Text (e.g., Change "Book Table" to "Reserve now").
+  * Field B: To dynamically rewrite the Destination URL or Anchor Path (e.g., Change "#booking" to "https://external-link.com").
+- ACTIVE TICKER EDITING LAW: When Admin Edit Mode is active and the marquee tickers freeze (animation-play-state: paused), clicking directly onto the frozen text within the horizontal marquee wrapper must instantly convert that ticker block into a fully functional inline text input field, allowing the presenter to overwrite the promotional copy on the spot. Leaving the field updates the live string.
+- DIRECT INLINE CRUD: Render crisp, mobile-friendly plus (+) and cross (x) icons right next to menu list items, events, and gallery slots in real-time, executing creation or deletion immediately without structural shifts or layout reloads.
+- GALLERY IMAGE LOCK: Render an inline image icon next to editable images triggering a native file selector (Max 5MB, JPEG/PNG/WEBP). Custom uploads permanently lock that slot from automated theme-switching.
 
 SECTION 3: UNIVERSAL PUBLIC WEBSITE STRUCTURE
 STICKY NAVIGATION: Brand Name/Logo on the left. Navigation links, Language Switcher, and Admin Access on the far right.
