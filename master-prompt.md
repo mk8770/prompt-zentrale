@@ -1,7 +1,7 @@
 # Universal Business Sales Demo Template
 
-**Version:** v1.1.2
-**Updated:** 14.10.2026 - 21:05 Uhr (Helsinki)
+**Version:** v1.1.3
+**Updated:** 14.10.2026 - 21:06 Uhr (Helsinki)
 
 ---
 
@@ -31,14 +31,12 @@ Rule B Story Shifting: For each theme, automatically generate unique headlines a
 Inline Admin Login Access: Place an Admin Login button directly next to the language switcher pill in the header. Clicking it opens a tiny inline credentials bar inside the navigation.
 Hardcoded Credentials: The password must be hardcoded strictly to 2026 to instantly unlock Edit Mode.
 
-SECTION 2: THE INLINE EDIT MODE & EVENT OVERRIDES
-- TOTAL ELEMENT EDITABILITY: When the presenter unlocks Edit Mode with password 2026, absolutely 100% of visible layout elements—including standard text, headers, marquee tickers, buttons, navigation links, list items, and prices—must become fully editable inline.
-- BLOCK STANDARD BROWSER BEHAVIOR (ANTI-NAVIGATION LAW): The JavaScript architecture must intercept and disable all default browser actions in edit mode. Clicking an active navigation link, utility button, or call-to-action anchor tag MUST NOT trigger web navigation or jump down the page. Use `e.preventDefault()` globally on all anchor and button clicks when edit mode is active.
-- INLINE FLOATING OPERATORS FOR LINKS & BUTTONS: When an editable Link or Button is clicked in edit mode, instead of navigating, render an instantaneous inline micro-floating input capsule directly over or adjacent to the clicked item. This capsule must feature two distinct text fields:
-  * Field A: To dynamically rewrite the visible Label Text (e.g., Change "Book Table" to "Reserve now").
-  * Field B: To dynamically rewrite the Destination URL or Anchor Path (e.g., Change "#booking" to "https://external-link.com").
-- ACTIVE TICKER EDITING LAW: When Admin Edit Mode is active and the marquee tickers freeze (animation-play-state: paused), clicking directly onto the frozen text within the horizontal marquee wrapper must instantly convert that ticker block into a fully functional inline text input field, allowing the presenter to overwrite the promotional copy on the spot. Leaving the field updates the live string.
-- DIRECT INLINE CRUD: Render crisp, mobile-friendly plus (+) and cross (x) icons right next to menu list items, events, and gallery slots in real-time, executing creation or deletion immediately without structural shifts or layout reloads.
+SECTION 2: ABSOLUTE INLINE EDITING MANDATE (ZERO EXCEPTIONS LAW)
+- THE TOTALITARIAN EDITABILITY RULE: When the presenter unlocks Edit Mode with password 2026, absolutely EVERY SINGLE visible text element, character, integer, currency symbol, sub-headline, section header, event title, card description, button label, and navbar link across the entire DOM MUST instantly become 100% editable inline.
+- NO PROTECTED COMPONENTS: The AI builder is strictly FORBIDDEN from leaving specific components static. Text inside the Special Features/Events section, pricing lists, grid headers, and statistical numbers MUST be injected with `contentEditable={true}` or bound directly to reactive text input states inline.
+- BAN ALL SIDEBARS AND MODAL WINDOWS: Under no circumstances is the AI allowed to open a separate settings panel, configuration modal, or popup edit window when an element is clicked. 100% of text modifications must happen directly inside the public page layout view.
+- LINK & BUTTON INLINE INTERCEPTION: Clicking any link or button in edit mode MUST NOT navigate. It must use `e.preventDefault()` and instantly convert the text into an active inline text-field cursor, while opening a micro-capsule floating right next to it strictly to modify the URL path.
+- EVENT DATA MUTATION: Overwriting an event name or price text inline must immediately update the underlying application state in real-time, ensuring that switching languages or themes does not wipe out the presenter's live edits.
 - GALLERY IMAGE LOCK: Render an inline image icon next to editable images triggering a native file selector (Max 5MB, JPEG/PNG/WEBP). Custom uploads permanently lock that slot from automated theme-switching.
 🚨 EMPTY STATE SECTION AUTOHIDE LAW:
 The JavaScript architecture must track the active item count of all dynamic CRUD sections (including Special Features/Highlights, Menu Lists, and Gallery Slots) in real-time.
