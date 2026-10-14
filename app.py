@@ -114,6 +114,17 @@ def apply_business_name(text: str, business_name: str) -> str:
     return text
 
 
+def insert_after_contact(text: str, block: str) -> str:
+    if CONTACT_MARKER not in text:
+        return text
+    lines = text.split("\n")
+    for index, line in enumerate(lines):
+        if line.startswith(CONTACT_MARKER):
+            lines.insert(index + 1, block)
+            break
+    return "\n".join(lines)
+
+
 def inject_address(text: str, address: str) -> str:
     cleaned = address.strip()
     if cleaned == "" or CONTACT_MARKER not in text:
@@ -126,6 +137,29 @@ def inject_address(text: str, address: str) -> str:
             lines.insert(index + 1, f"Physical address: {cleaned}.")
             break
     return "\n".join(lines)
+
+
+def inject_phone(text: str, phone: str) -> str:
+    cleaned = phone.strip()
+    if cleaned == "":
+        return text
+    tel_target = "tel:" + re.sub(r"[^\d+]", "", cleaned)
+    return insert_after_contact(
+        text,
+        "Phone number: "
+        f"{cleaned}. Hardcode this as a functional, clickable tel: link "
+        f"({tel_target}) on the final public website view.",
+    )
+
+
+def inject_opening_hours(text: str, opening_hours: str) -> str:
+    cleaned = opening_hours.strip()
+    if cleaned == "":
+        return text
+    return insert_after_contact(
+        text,
+        "Opening hours: use these exact hours in the contact card:\n" + cleaned,
+    )
 
 
 def describe_social_link(url: str) -> str:
@@ -156,12 +190,7 @@ def inject_social_links(text: str, links: list[str]) -> str:
         "If multiple links are provided, render them as a beautiful, clean side-by-side icon list "
         "in the footer/contact card."
     )
-    lines = text.split("\n")
-    for index, line in enumerate(lines):
-        if line.startswith(CONTACT_MARKER):
-            lines.insert(index + 1, block)
-            break
-    return "\n".join(lines)
+    return insert_after_contact(text, block)
 
 
 def compile_prompt(
@@ -170,6 +199,8 @@ def compile_prompt(
     label: str,
     business_name: str,
     address: str,
+    phone: str,
+    opening_hours: str,
     vibe: str,
     features: str,
     social_links: list[str],
@@ -189,6 +220,8 @@ def compile_prompt(
     compiled = apply_business_name(f"{core.rstrip()}\n\n{selected}", business_name)
     compiled = inject_address(compiled, address)
     compiled = inject_social_links(compiled, social_links)
+    compiled = inject_opening_hours(compiled, opening_hours)
+    compiled = inject_phone(compiled, phone)
 
     vibe_text = vibe.strip()
     if vibe_text:
@@ -482,15 +515,20 @@ def main() -> None:
 
     business_name = st.text_input("1. Business Name", value="Pub Magneetti")
     address = st.text_input("2. Physical Address", value="Mäkelänkatu 20 B, 00550 Helsinki")
+    phone = st.text_input("3. Phone Number (Optional)", value="+358 9 712345")
+    social_links = render_social_links()
+    opening_hours = st.text_area(
+        "5. Opening Hours",
+        value="Ma-To: 14-02\nPe-La: 12-03\nSu: 14-02",
+    )
     vibe = st.text_input(
-        "3. Overall Feeling / Vibe",
+        "6. Overall Feeling / Vibe",
         value="Grungy, authentic underground dive bar with raw aesthetic",
     )
     features = st.text_area(
-        "4. Custom Features / Extra Rules (Optional)",
+        "7. Custom Features / Extra Rules (Optional)",
         placeholder="e.g., Add a weekly dart tournament section, set draft beers to 8 euros",
     )
-    social_links = render_social_links()
 
     flash = st.session_state.pop("flash", None)
     if flash:
@@ -507,6 +545,8 @@ def main() -> None:
             label,
             business_name,
             address,
+            phone,
+            opening_hours,
             vibe,
             features,
             social_links,
