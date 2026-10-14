@@ -1,0 +1,13 @@
+---
+description: Commit and push project updates after each completed change
+alwaysApply: true
+---
+
+# Commit and push
+
+After a completed change in this project, commit the related files and push the current branch to `origin`.
+
+- Stage only the files that belong to the change. Leave caches such as `__pycache__/` untracked.
+- Use a concise commit message that states why the change was made.
+- Push the current branch to the existing `origin` remote. Do not force-push.
+- If a turn only answers a question and does not change files, do not create an empty commit.
