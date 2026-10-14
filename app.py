@@ -95,7 +95,48 @@ def category_block(category: dict) -> str:
     return "\n".join(category["lines"]).strip("\n")
 
 
-def compile_prompt(master_content: str, category: dict, label: str) -> str:
+FALLBACK_BUSINESS_NAMES = (
+    "[Name des Unternehmens]",
+    "[Business Name]",
+    "[Company Name]",
+    "Pub Hertta 5",
+    "Pub Magneetti",
+)
+CONTACT_MARKER = "CONTACT & SOCIAL INTERACTIVE CARD:"
+
+
+def apply_business_name(text: str, business_name: str) -> str:
+    name = business_name.strip()
+    if name == "":
+        return text
+    for fallback in FALLBACK_BUSINESS_NAMES:
+        text = text.replace(fallback, name)
+    return text
+
+
+def inject_address(text: str, address: str) -> str:
+    cleaned = address.strip()
+    if cleaned == "" or CONTACT_MARKER not in text:
+        return text
+    if "address placeholder" in text:
+        return text.replace("address placeholder", cleaned)
+    lines = text.split("\n")
+    for index, line in enumerate(lines):
+        if line.startswith(CONTACT_MARKER):
+            lines.insert(index + 1, f"Physical address: {cleaned}.")
+            break
+    return "\n".join(lines)
+
+
+def compile_prompt(
+    master_content: str,
+    category: dict,
+    label: str,
+    business_name: str,
+    address: str,
+    vibe: str,
+    features: str,
+) -> str:
     if SECTION_MARKER not in master_content:
         raise ValueError(f'The master prompt is missing "{SECTION_MARKER}".')
     core, _marker, _rest = master_content.partition(SECTION_MARKER)
@@ -108,7 +149,26 @@ def compile_prompt(master_content: str, category: dict, label: str) -> str:
         f"{SECTION_MARKER}\n"
         f"{block}\n"
     )
-    return f"{core.rstrip()}\n\n{selected}"
+    compiled = apply_business_name(f"{core.rstrip()}\n\n{selected}", business_name)
+    compiled = inject_address(compiled, address)
+
+    vibe_text = vibe.strip()
+    if vibe_text:
+        compiled = (
+            "🚨 CRITICAL ART DIRECTION & ATMOSPHERE OVERRIDE:\n"
+            "Strictly align all default imagery, text copywriting, and design theme choices "
+            f"to match this specific aesthetic: {vibe_text}\n\n"
+            f"{compiled}"
+        )
+
+    feature_text = features.strip()
+    if feature_text:
+        compiled = (
+            f"{compiled.rstrip()}\n\n"
+            "CUSTOM CLIENT FUNCTIONAL REQUIREMENTS\n"
+            f"{feature_text}\n"
+        )
+    return compiled
 
 
 def rule_bullets(instruction: str) -> str:
@@ -357,6 +417,17 @@ def main() -> None:
     st.title("Prompt Zentrale")
     st.caption("Select an industry, copy the compiled English prompt, or append a new rule.")
 
+    business_name = st.text_input("1. Business Name", value="Pub Magneetti")
+    address = st.text_input("2. Physical Address", value="Mäkelänkatu 20 B, 00550 Helsinki")
+    vibe = st.text_input(
+        "3. Overall Feeling / Vibe",
+        value="Grungy, authentic underground dive bar with raw aesthetic",
+    )
+    features = st.text_area(
+        "4. Custom Features / Extra Rules (Optional)",
+        placeholder="e.g., Add a weekly dart tournament section, set draft beers to 8 euros",
+    )
+
     flash = st.session_state.pop("flash", None)
     if flash:
         st.success(flash)
@@ -366,7 +437,15 @@ def main() -> None:
     selected = render_industry_tabs(categories)
     label = industry_label(selected)
     try:
-        compiled = compile_prompt(master["content"], selected, label)
+        compiled = compile_prompt(
+            master["content"],
+            selected,
+            label,
+            business_name,
+            address,
+            vibe,
+            features,
+        )
     except ValueError as exc:
         st.error(str(exc))
         st.stop()
