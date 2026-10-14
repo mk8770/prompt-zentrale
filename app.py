@@ -155,13 +155,63 @@ def inject_phone(text: str, phone: str) -> str:
     )
 
 
+WEEKDAYS = (
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+)
+WEEKDAY_SHORT = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+HOUR_OPTIONS = [f"{hour:02d}:00" for hour in range(24)]
+DEFAULT_OPENING_HOURS = {
+    "Monday": ("14:00", "02:00"),
+    "Tuesday": ("14:00", "02:00"),
+    "Wednesday": ("14:00", "02:00"),
+    "Thursday": ("14:00", "02:00"),
+    "Friday": ("12:00", "03:00"),
+    "Saturday": ("12:00", "03:00"),
+    "Sunday": ("14:00", "02:00"),
+}
+
+
+def compile_opening_schedule(days: list[dict]) -> str:
+    """Collapse adjacent days that share the same hours into one English line."""
+    if len(days) != 7:
+        raise ValueError("Opening hours must cover Monday through Sunday.")
+    groups: list[tuple[tuple[str, ...], int, int]] = []
+    for index, day in enumerate(days):
+        if day.get("closed"):
+            signature = ("closed",)
+        else:
+            signature = ("open", str(day.get("opens", "")), str(day.get("closes", "")))
+        if groups and groups[-1][0] == signature:
+            previous, start, _end = groups[-1]
+            groups[-1] = (previous, start, index)
+        else:
+            groups.append((signature, index, index))
+    lines: list[str] = []
+    for signature, start, end in groups:
+        span = WEEKDAY_SHORT[start] if start == end else f"{WEEKDAY_SHORT[start]}-{WEEKDAY_SHORT[end]}"
+        if signature[0] == "closed":
+            lines.append(f"{span}: Closed")
+        else:
+            lines.append(f"{span}: {signature[1]} - {signature[2]}")
+    return "\n".join(lines)
+
+
 def inject_opening_hours(text: str, opening_hours: str) -> str:
     cleaned = opening_hours.strip()
     if cleaned == "":
         return text
     return insert_after_contact(
         text,
-        "Opening hours: use these exact hours in the contact card:\n" + cleaned,
+        "OPENING HOURS:\n"
+        f"{cleaned}\n"
+        "Render these operating hours beautifully formatted as a clean, highly readable, "
+        "structured table or list inside the footer or contact section.",
     )
 
 
@@ -295,7 +345,7 @@ def compile_prompt(
     business_name: str,
     address: str,
     phone: str,
-    opening_hours: str,
+    opening_days: list[dict],
     vibe: str,
     features: str,
     social_links: list[str],
@@ -316,7 +366,7 @@ def compile_prompt(
     compiled = apply_business_name(f"{core.rstrip()}\n\n{selected}", business_name)
     compiled = inject_address(compiled, address)
     compiled = inject_social_links(compiled, social_links)
-    compiled = inject_opening_hours(compiled, opening_hours)
+    compiled = inject_opening_hours(compiled, compile_opening_schedule(opening_days))
     compiled = inject_phone(compiled, phone)
 
     vibe_text = vibe.strip()
@@ -506,6 +556,35 @@ def inject_styles() -> None:
     )
 
 
+def render_opening_hours() -> list[dict]:
+    st.markdown("**5. Opening Hours**")
+    days: list[dict] = []
+    for day in WEEKDAYS:
+        open_default, close_default = DEFAULT_OPENING_HOURS[day]
+        day_col, closed_col, open_col, close_col = st.columns(
+            [1.4, 1, 1.3, 1.3],
+            vertical_alignment="bottom",
+        )
+        day_col.markdown(f"**{day}**")
+        closed = closed_col.checkbox("Closed", key=f"hours_closed_{day}")
+        opens = open_col.selectbox(
+            "Opens",
+            HOUR_OPTIONS,
+            index=HOUR_OPTIONS.index(open_default),
+            key=f"hours_open_{day}",
+            disabled=closed,
+        )
+        closes = close_col.selectbox(
+            "Closes",
+            HOUR_OPTIONS,
+            index=HOUR_OPTIONS.index(close_default),
+            key=f"hours_close_{day}",
+            disabled=closed,
+        )
+        days.append({"closed": closed, "opens": opens, "closes": closes})
+    return days
+
+
 def render_social_links() -> list[str]:
     if "social_links" not in st.session_state:
         st.session_state.social_links = [""]
@@ -618,10 +697,7 @@ def main() -> None:
     address = st.text_input("2. Physical Address", value="Mäkelänkatu 20 B, 00550 Helsinki")
     phone = st.text_input("3. Phone Number (Optional)", value="+358 9 712345")
     social_links = render_social_links()
-    opening_hours = st.text_area(
-        "5. Opening Hours",
-        value="Ma-To: 14-02\nPe-La: 12-03\nSu: 14-02",
-    )
+    opening_days = render_opening_hours()
     vibe = st.text_input(
         "6. Overall Feeling / Vibe",
         value="Grungy, authentic underground dive bar with raw aesthetic",
@@ -662,7 +738,7 @@ def main() -> None:
             business_name,
             address,
             phone,
-            opening_hours,
+            opening_days,
             vibe,
             features,
             social_links,
