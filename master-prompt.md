@@ -1,7 +1,7 @@
 # Universal Business Sales Demo Template
 
-**Version:** v1.0.9
-**Updated:** 14.10.2026 - 20:59 Uhr (Helsinki)
+**Version:** v1.1.1
+**Updated:** 14.10.2026 - 21:04 Uhr (Helsinki)
 
 ---
 
@@ -52,6 +52,10 @@ TOP MARQUEE POSITIONING: Build a slow-moving horizontal marquee ticker banner po
 Rule A Typo Scale: The text within this marquee banner must be styled extra large, prominent, and bold (text-2xl or text-3xl).
 Rule B Freezing: When inline Admin Edit Mode is active, the CSS animation scroll of BOTH the Top Marquee and the Testimonials Marquee must instantly FREEZE and pause completely.
 HERO SECTION: Features user-uploaded image as background overlay. Automatically generate dynamic titles and buttons.
+HERO SECTION AUTOMATIC SLIDESHOW LAW:
+- INTERVAL: The background image change MUST trigger exactly every 5000 milliseconds (5 seconds).
+- SMOOTH CROSS-FADE TRANSITION: The animation style must strictly avoid raw picture cutting. It must apply a hardware-accelerated, buttery smooth cross-fade overlay effect where the opacity transition duration is locked exactly to 1000 milliseconds (1 second) to create a premium, high-end agency look.
+- USER UPLOAD LOCK: Any custom mobile phone photo upload on the Hero placeholder instantly halts the transition loop and locks the screen frame to that single asset permanently.
 ABOUT US SECTION: Clean split layout. Left side displays dynamic title and story text shifting with the theme. Right side shows a photo of the interior.
 3. DYNAMIC OFFERINGS SECTION (STRICT VERTICAL MENU LIST LAYOUT):
 - BAN ALL SINGLE-PRICE BLOCKS: The AI builder is strictly FORBIDDEN from rendering each column as a single giant card displaying only one generic title and one global price block.
