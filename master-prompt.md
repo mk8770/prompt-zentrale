@@ -1,7 +1,7 @@
 # Universal Business Sales Demo Template
 
-**Version:** v1.0.8
-**Updated:** 14.10.2026 - 20:57 Uhr (Helsinki)
+**Version:** v1.0.9
+**Updated:** 14.10.2026 - 20:59 Uhr (Helsinki)
 
 ---
 
@@ -40,6 +40,11 @@ SECTION 2: THE INLINE EDIT MODE & EVENT OVERRIDES
 - ACTIVE TICKER EDITING LAW: When Admin Edit Mode is active and the marquee tickers freeze (animation-play-state: paused), clicking directly onto the frozen text within the horizontal marquee wrapper must instantly convert that ticker block into a fully functional inline text input field, allowing the presenter to overwrite the promotional copy on the spot. Leaving the field updates the live string.
 - DIRECT INLINE CRUD: Render crisp, mobile-friendly plus (+) and cross (x) icons right next to menu list items, events, and gallery slots in real-time, executing creation or deletion immediately without structural shifts or layout reloads.
 - GALLERY IMAGE LOCK: Render an inline image icon next to editable images triggering a native file selector (Max 5MB, JPEG/PNG/WEBP). Custom uploads permanently lock that slot from automated theme-switching.
+🚨 EMPTY STATE SECTION AUTOHIDE LAW:
+The JavaScript architecture must track the active item count of all dynamic CRUD sections (including Special Features/Highlights, Menu Lists, and Gallery Slots) in real-time.
+- If the presenter deletes all dynamic items within a section (e.g., deleting all 3 default events or highlights), the code MUST automatically detect an item count of 0.
+- Upon hitting 0 items, the entire parent wrapper section—including the main section header (e.g., "Why We're Different"), sub-headlines, wrappers, and background paddings—MUST instantly hide itself completely from the viewport (e.g., apply a conditional display wrapper or `hidden` class dynamically based on state length).
+- The layout must seamlessly collapse without leaving empty vertical whitespace blocks, broken text fragments, or orphan headlines on the screen.
 
 SECTION 3: UNIVERSAL PUBLIC WEBSITE STRUCTURE
 STICKY NAVIGATION: Brand Name/Logo on the left. Navigation links, Language Switcher, and Admin Access on the far right.
