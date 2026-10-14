@@ -8,9 +8,7 @@ import re
 import shutil
 import subprocess
 import tempfile
-from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 import streamlit as st
 
@@ -21,7 +19,6 @@ MASTER_ID = "master-prompt"
 SECTION_MARKER = "SECTION 4: ACTIVE BUSINESS CATEGORIES"
 CATEGORY_LINE = re.compile(r"^Category\s+(\d+):\s+(.+?)\s*$")
 CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
-HELSINKI = ZoneInfo("Europe/Helsinki")
 
 INDUSTRY_LABELS = {
     "1": "Pub",
@@ -92,17 +89,6 @@ def parse_categories(content: str) -> list[dict]:
 
 def industry_label(category: dict) -> str:
     return INDUSTRY_LABELS.get(category["number"], category["title"])
-
-
-def helsinki_clock(timestamp: object) -> tuple[str, str] | None:
-    if not isinstance(timestamp, str) or timestamp.strip() == "":
-        return None
-    try:
-        parsed = datetime.fromisoformat(timestamp.strip().replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    local = parsed.astimezone(HELSINKI)
-    return local.strftime("%H:%M"), local.strftime("%d.%m.%Y")
 
 
 def category_block(category: dict) -> str:
@@ -283,38 +269,6 @@ def inject_styles() -> None:
           textarea {
             font-size: 1rem !important;
           }
-          .updated-card {
-            background: #10151c;
-            border: 1px solid #314056;
-            border-radius: 12px;
-            padding: 0.7rem 0.9rem 0.8rem;
-            margin: 0.15rem 0 0.35rem;
-          }
-          .updated-label,
-          .updated-zone {
-            color: #93a4ba;
-            font-size: 0.72rem;
-            font-weight: 650;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-          }
-          .updated-time {
-            margin-top: 0.15rem;
-            color: #f7f9fc;
-            font-size: 2.35rem;
-            font-weight: 700;
-            line-height: 1;
-            letter-spacing: 0.03em;
-            font-variant-numeric: tabular-nums;
-          }
-          .updated-date {
-            margin-top: 0.35rem;
-            color: #d7e0ec;
-            font-size: 1.2rem;
-            font-weight: 650;
-            line-height: 1.2;
-            font-variant-numeric: tabular-nums;
-          }
         </style>
         """,
         unsafe_allow_html=True,
@@ -378,22 +332,14 @@ def main() -> None:
         st.code(MASTER_ID, language="text")
         st.write("**Version**")
         st.code(str(master.get("version", "")), language="text")
-        clock = helsinki_clock(master.get("lastUpdated", ""))
-        if clock is None:
-            st.write("**Updated**")
-        else:
-            updated_time, updated_date = clock
-            st.markdown(
-                f"""
-                <div class="updated-card">
-                  <div class="updated-label">Updated</div>
-                  <div class="updated-time">{updated_time}</div>
-                  <div class="updated-date">{updated_date}</div>
-                  <div class="updated-zone">Helsinki</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+        prompt = master
+        import datetime
+        try:
+            iso_time = prompt["lastUpdated"].replace("Z", "+00:00")
+            dt = datetime.datetime.fromisoformat(iso_time)
+            st.write(f"Updated: {dt.strftime('%d.%m.%Y - %H:%M Uhr')}")
+        except Exception:
+            st.write(f"Updated: {prompt['lastUpdated']}")
         st.divider()
         st.caption(
             "Update Prompt appends the instruction to the selected industry "
