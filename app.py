@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
@@ -193,19 +194,39 @@ def inject_social_links(text: str, links: list[str]) -> str:
     return insert_after_contact(text, block)
 
 
-VISUAL_IDENTITY_DIRECTION = (
-    "🚨 VISUAL IDENTITY DIRECTION FROM REAL PHOTOS: The AI builder must create a UI that acts as a "
-    "direct digital twin of the customer's physical establishment. Use a dark-charcoal base if the "
-    "photo indicates a pub, map neon glow effects to the primary utility buttons if neon exists, and "
-    "strictly align card-surfaces to resemble authentic textures (like raw wood, brick, or matte metal) "
-    "shown in the reference imagery."
-)
+def encode_uploaded_image(uploaded_file) -> tuple[bytes, str] | None:
+    if uploaded_file is None:
+        return None
+    try:
+        raw = uploaded_file.getvalue()
+    except Exception:
+        try:
+            uploaded_file.seek(0)
+            raw = uploaded_file.read()
+        except Exception:
+            return None
+    if not raw:
+        return None
+    mime = str(getattr(uploaded_file, "type", "") or "").lower()
+    if mime == "image/jpg":
+        mime = "image/jpeg"
+    if mime not in {"image/png", "image/jpeg"}:
+        name = str(getattr(uploaded_file, "name", "") or "").lower()
+        mime = "image/jpeg" if name.endswith((".jpg", ".jpeg")) else "image/png"
+    encoded = base64.b64encode(raw).decode("ascii")
+    return raw, f"data:{mime};base64,{encoded}"
 
 
-def visual_identity_block(reference_name: str | None) -> str:
-    if not reference_name:
+def visual_identity_block(data_uri: str | None) -> str:
+    if not data_uri:
         return ""
-    return f"{VISUAL_IDENTITY_DIRECTION}\nReference image: {reference_name}\n\n"
+    return (
+        "🚨 CRITICAL VISUAL INSPIRATION IMAGE (BASE64 DATA):\n"
+        "The presenter has provided a visual twin reference image of the live establishment. "
+        "Use this embedded image asset to guide your complete art direction, color themes "
+        "(e.g., match neon lights, warm woods, or dark shades), and select matching curated stock photos. "
+        f"Asset Data: [{data_uri}]\n\n"
+    )
 
 
 def compile_prompt(
@@ -219,7 +240,7 @@ def compile_prompt(
     vibe: str,
     features: str,
     social_links: list[str],
-    reference_name: str | None = None,
+    image_data_uri: str | None = None,
 ) -> str:
     if SECTION_MARKER not in master_content:
         raise ValueError(f'The master prompt is missing "{SECTION_MARKER}".')
@@ -248,7 +269,7 @@ def compile_prompt(
             f"{compiled}"
         )
 
-    reference = visual_identity_block(reference_name)
+    reference = visual_identity_block(image_data_uri)
     if reference:
         compiled = f"{reference}{compiled}"
 
@@ -550,8 +571,15 @@ def main() -> None:
         "8. Upload Bar Screenshot / Photo (AI Vibe Analyzer)",
         type=["jpg", "jpeg", "png"],
     )
-    if uploaded_screenshot is not None:
-        vibe_preview.image(uploaded_screenshot, caption="Vibe reference", width="stretch")
+    image_bytes = None
+    image_data_uri = None
+    encoded_image = encode_uploaded_image(uploaded_screenshot)
+    if encoded_image is not None:
+        image_bytes, image_data_uri = encoded_image
+        try:
+            vibe_preview.image(image_bytes, caption="Vibe reference", width="stretch")
+        except Exception:
+            vibe_preview.caption("Preview unavailable. The photo is still embedded in the prompt.")
     features = st.text_area(
         "9. Custom Features / Extra Rules (Optional)",
         placeholder="e.g., Add a weekly dart tournament section, set draft beers to 8 euros",
@@ -577,7 +605,7 @@ def main() -> None:
             vibe,
             features,
             social_links,
-            uploaded_screenshot.name if uploaded_screenshot is not None else None,
+            image_data_uri,
         )
     except ValueError as exc:
         st.error(str(exc))
