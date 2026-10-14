@@ -1,7 +1,7 @@
 # Universal Business Sales Demo Template
 
-**Version:** v1.0.7
-**Updated:** 14.10.2026 - 20:55 Uhr (Helsinki)
+**Version:** v1.0.8
+**Updated:** 14.10.2026 - 20:57 Uhr (Helsinki)
 
 ---
 
@@ -58,7 +58,17 @@ ABOUT US SECTION: Clean split layout. Left side displays dynamic title and story
   * Column 3 (SHOTIT JA VIINAT): Koskenkorva (6,50€), Jägermeister (6,50€), Jameson (6,50€), Jack Daniel's (6,50€), Fernet-Branca (6,50€).
   * Column 4 (ALKOHOLITTOMAT): Soft Drinks (4€), Fresh Juice (4€), Espresso (4€), Mineral Water (3€), Virgin Cocktails (4€).
 - FULL INLINE EDIT MODE (PASSWORD 2026): When the presenter logs in with the password 2026, every single item name string and every single price text within these vertical lists must turn into an independent content-editable field for live, seamless modification on the spot.
-DYNAMIC GALLERY SECTION: Mixed asymmetry grid of 6 initial image slots (landscape, square, portrait). Placeholder images automatically cycle to match themes via Pexels API unless overridden by custom uploads.
+DYNAMIC GALLERY SECTION (EXPLICIT ASYMMETRIC GRID LAW):
+- STRICT WRAPPER CONTAINER: The 6 gallery slots MUST be locked inside a clean CSS Grid wrapper defined exactly as `grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 auto-rows-[250px] md:auto-rows-[300px]`. The AI builder is strictly FORBIDDEN from using chaotic masonry styles, loose flexboxes, or negative margins (like `-mt-X`) that break element alignment.
+- HARDCODED STRUCTURAL ASYMMETRY: To build a high-end, premium magazine style layout, the 6 asset boxes MUST strictly utilize these explicit grid-span utility combinations:
+  * Box 1 (Hero Showcase): `md:col-span-2 md:row-span-2` (Large focal landscape container).
+  * Box 2 (Vertical Feature): `md:col-span-1 md:row-span-2` (Tall portrait container).
+  * Box 3 (Square Highlight): `md:col-span-1 md:row-span-1`.
+  * Box 4 (Wide Banner): `md:col-span-2 md:row-span-1`.
+  * Box 5 (Standard Block): `md:col-span-1 md:row-span-1`.
+  * Box 6 (Standard Block): `md:col-span-1 md:row-span-1`.
+- ANTI-DISTORTION & IMAGE CLIPPING LAW: Every single image element inside these 6 boxes MUST be hardcoded with the classes `w-full h-full object-cover rounded-xl transition-all duration-300 hover:scale-[1.02]`. This guarantees that images completely fill their grid containers and clip beautifully without any distortion, weird whitespace gaps, or vertical overlapping bugs.
+- THEME COMPLIANCE: The Pexels API image queries must fetch unique, moody assets that exactly match the active design theme vibe (e.g., neon-lit bar tables for the Dive Bar, brick walls for the Industrial style).
 SPECIAL FEATURES AND HIGHLIGHTS SECTION: Marketing grid detailing three dynamic events or unique selling points tailored to the business type.
 DEMO LEAD OR BOOKING FORM: Functional niche demo form (Max 6 people or dates). Submitting shows an inline success popup and logs data directly into the inline viewer log.
 TESTIMONIALS MARQUEE: Slow marquee running right to left with realistic guest reviews (~50% English, ~40% Finnish, <10% German/Spanish).
