@@ -334,10 +334,18 @@ def main() -> None:
         st.code(str(master.get("version", "")), language="text")
         prompt = master
         import datetime
+        from zoneinfo import ZoneInfo
+
         try:
+            # Parse the UTC timestamp from the database
             iso_time = prompt["lastUpdated"].replace("Z", "+00:00")
-            dt = datetime.datetime.fromisoformat(iso_time)
-            st.write(f"Updated: {dt.strftime('%d.%m.%Y - %H:%M Uhr')}")
+            dt_utc = datetime.datetime.fromisoformat(iso_time)
+
+            # Convert directly to Helsinki Local Time
+            dt_helsinki = dt_utc.astimezone(ZoneInfo("Europe/Helsinki"))
+
+            # Render only clean Date and Time in German/European format
+            st.write(f"Updated: {dt_helsinki.strftime('%d.%m.%Y - %H:%M')} Uhr")
         except Exception:
             st.write(f"Updated: {prompt['lastUpdated']}")
         st.divider()
