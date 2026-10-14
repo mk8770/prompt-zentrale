@@ -9,9 +9,11 @@ import re
 import shutil
 import subprocess
 import tempfile
+from io import BytesIO
 from pathlib import Path
 
 import streamlit as st
+from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent
 DB_PATH = ROOT / "prompts-db.json"
@@ -194,6 +196,33 @@ def inject_social_links(text: str, links: list[str]) -> str:
     return insert_after_contact(text, block)
 
 
+PROMPT_IMAGE_EDGE = 480
+PROMPT_IMAGE_MAX_BYTES = 90_000
+ASSET_DATA_PREFIX = "Asset Data: ["
+
+
+def shrink_for_prompt(raw: bytes) -> tuple[bytes, str] | None:
+    """Downscale a photo so the embedded prompt stays small enough to render."""
+    try:
+        with Image.open(BytesIO(raw)) as image:
+            image = ImageOps.exif_transpose(image)
+            if image.mode != "RGB":
+                image = image.convert("RGB")
+            image.thumbnail((PROMPT_IMAGE_EDGE, PROMPT_IMAGE_EDGE))
+            best: bytes | None = None
+            for quality in (65, 50, 35, 25):
+                buffer = BytesIO()
+                image.save(buffer, format="JPEG", quality=quality, optimize=True)
+                best = buffer.getvalue()
+                if len(best) <= PROMPT_IMAGE_MAX_BYTES:
+                    break
+    except Exception:
+        return None
+    if not best or len(best) > 250_000:
+        return None
+    return best, "image/jpeg"
+
+
 def encode_uploaded_image(uploaded_file) -> tuple[bytes, str] | None:
     if uploaded_file is None:
         return None
@@ -207,14 +236,44 @@ def encode_uploaded_image(uploaded_file) -> tuple[bytes, str] | None:
             return None
     if not raw:
         return None
-    mime = str(getattr(uploaded_file, "type", "") or "").lower()
-    if mime == "image/jpg":
-        mime = "image/jpeg"
-    if mime not in {"image/png", "image/jpeg"}:
-        name = str(getattr(uploaded_file, "name", "") or "").lower()
-        mime = "image/jpeg" if name.endswith((".jpg", ".jpeg")) else "image/png"
-    encoded = base64.b64encode(raw).decode("ascii")
-    return raw, f"data:{mime};base64,{encoded}"
+    shrunk = shrink_for_prompt(raw)
+    if shrunk is None:
+        return None
+    jpeg_bytes, mime = shrunk
+    encoded = base64.b64encode(jpeg_bytes).decode("ascii")
+    return jpeg_bytes, f"data:{mime};base64,{encoded}"
+
+
+def cached_uploaded_image(uploaded_file) -> tuple[bytes, str] | None:
+    if uploaded_file is None:
+        return None
+    token = (
+        getattr(uploaded_file, "file_id", None),
+        getattr(uploaded_file, "name", None),
+        getattr(uploaded_file, "size", None),
+    )
+    cache = st.session_state.get("_vibe_image_cache")
+    if isinstance(cache, tuple) and len(cache) == 2 and cache[0] == token:
+        return cache[1]
+    encoded = encode_uploaded_image(uploaded_file)
+    st.session_state["_vibe_image_cache"] = (token, encoded)
+    return encoded
+
+
+def prompt_for_screen(compiled: str) -> str:
+    """Hide the Base64 payload in the on-screen prompt. Copy still includes it."""
+    start = compiled.find(ASSET_DATA_PREFIX)
+    if start < 0:
+        return compiled
+    payload_start = start + len(ASSET_DATA_PREFIX)
+    end = compiled.find("]", payload_start)
+    if end < 0:
+        return compiled
+    note = (
+        "Asset Data: [photo embedded in the copied prompt, "
+        f"{end - payload_start} characters]"
+    )
+    return compiled[:start] + note + compiled[end + 1 :]
 
 
 def visual_identity_block(data_uri: str | None) -> str:
@@ -573,13 +632,15 @@ def main() -> None:
     )
     image_bytes = None
     image_data_uri = None
-    encoded_image = encode_uploaded_image(uploaded_screenshot)
-    if encoded_image is not None:
+    encoded_image = cached_uploaded_image(uploaded_screenshot)
+    if uploaded_screenshot is not None and encoded_image is None:
+        st.warning("That photo could not be prepared. Try a smaller JPG or PNG.")
+    elif encoded_image is not None:
         image_bytes, image_data_uri = encoded_image
         try:
             vibe_preview.image(image_bytes, caption="Vibe reference", width="stretch")
         except Exception:
-            vibe_preview.caption("Preview unavailable. The photo is still embedded in the prompt.")
+            vibe_preview.caption("Preview unavailable. The photo is still included when you copy the prompt.")
     features = st.text_area(
         "9. Custom Features / Extra Rules (Optional)",
         placeholder="e.g., Add a weekly dart tournament section, set draft beers to 8 euros",
@@ -622,7 +683,9 @@ def main() -> None:
         st.caption(f"{selected['title']} injected into the master-prompt rules.")
     with copy_col:
         copy_button(compiled)
-    st.code(compiled, language="markdown")
+    st.code(prompt_for_screen(compiled), language="markdown")
+    if image_data_uri:
+        st.caption("Copy to Clipboard includes the compressed photo. This view leaves the data out so the page stays responsive.")
 
     st.divider()
     instruction_key = st.session_state.setdefault("instruction_key", 0)
