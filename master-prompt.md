@@ -1,7 +1,7 @@
 # Universal Business Sales Demo Template
 
-**Version:** v1.1.1
-**Updated:** 14.10.2026 - 21:04 Uhr (Helsinki)
+**Version:** v1.1.2
+**Updated:** 14.10.2026 - 21:05 Uhr (Helsinki)
 
 ---
 
@@ -13,7 +13,7 @@ CRITICAL INLINE REQUIREMENT: You are strictly FORBIDDEN from building a separate
 
 SECTION 1: GLOBAL CONTROLS & DYNAMIC MULTI-THEME SWITCHER
 Language Switcher: Implement a prominent toggle button styled like a pill (tablette design) in the header. It must allow the user to instantly switch the entire website between English and Finnish. All text content must change based on the active language.
-Live Design Theme Switcher: Add a sleek floating theme switcher widget at the bottom corner of the screen. Toggling a theme must instantly update the visual color system AND dynamically swap BOTH the default section titles and the entire body text paragraphs underneath across the page to match the vibe and tone of that selected style.
+Live Design Theme Switcher: Add a sleek floating theme switcher widget at the bottom corner of the screen. Toggling a theme must instantly update the visual color system AND dynamically swap BOTH the default section titles and the entire body text paragraphs underneath across the page to match the vibe and tone of that selected style. Toggling any of the 6 styles MUST also execute the THEME-SYNCHRONIZED HERO SLIDESHOW LAW and replace the hero background array for the active theme.
 🚨 GLOBAL THEME CONTRAST & ACCESSIBILITY LAW (Strict WCAG 2.1 Compliance):
 The AI builder must implement an unbreakable programmatic contrast guard within the Theme Switcher engine. Toggling between any of the 6 distinct styles (including light, dark, underground, or neon look) MUST dynamically calculate and invert typography/button text colors to guarantee perfect visibility against their backgrounds.
 - RULE A (Dark Backdrops): Whenever a design theme utilizes a dark background (such as the Rock Cave, Neon Dive, or heavy charcoal schemes), ALL text blocks, including body copy, links, secondary titles, and category headers, MUST dynamically flip to brilliant white (#ffffff) or highly reflective silver (#f1f5f9). Dark grey or charcoal text on dark surfaces is strictly FORBIDDEN.
@@ -56,6 +56,16 @@ HERO SECTION AUTOMATIC SLIDESHOW LAW:
 - INTERVAL: The background image change MUST trigger exactly every 5000 milliseconds (5 seconds).
 - SMOOTH CROSS-FADE TRANSITION: The animation style must strictly avoid raw picture cutting. It must apply a hardware-accelerated, buttery smooth cross-fade overlay effect where the opacity transition duration is locked exactly to 1000 milliseconds (1 second) to create a premium, high-end agency look.
 - USER UPLOAD LOCK: Any custom mobile phone photo upload on the Hero placeholder instantly halts the transition loop and locks the screen frame to that single asset permanently.
+🚨 THEME-SYNCHRONIZED HERO SLIDESHOW LAW:
+The automated 5-second smooth cross-fade Hero slideshow MUST be programmatically bound to the active state of the Live Design Theme Switcher.
+1. INTERACTIVE IMAGE SWAP: Clicking or toggling any of the 6 distinct visual styles MUST instantly flush and replace the entire background image slideshow array in real-time.
+2. THEME-SPECIFIC PEXELS QUERIES: The 3 images within the looping carousel must dynamically adapt to match the color palette and atmosphere of the selected design:
+   - Theme 1 (Modern Nordic Kallio): Arrays must load clean, high-contrast, modern urban Scandinavian bar interiors and minimalist craft beverage shots.
+   - Theme 2 (The Irish Hertta): Arrays must switch to cozy dark wood pubs, historic stone walls, and deep emerald green/amber beer asset photography.
+   - Theme 5 (Rock & Heavy Metal Cave): Arrays must completely swap to gritty rock concert stages, dark neon-red lighting, and electric guitar/underground aesthetics.
+   - Theme 6 (Neon Underground Dive Bar): Arrays must load fluorescent pink/cyan retro bar corners and moody street-vibe nightclub assets.
+3. PRESERVE THE SMOOTH FADE: The initial image transition when switching themes must maintain the identical, buttery-smooth 1000ms cross-fade effect without any hard screen snapping, blank flashes, or layout reflows.
+4. MANUAL UPLOAD OVERRIDE: If the user uploads a custom smartphone file to the Hero section, that specific user-uploaded asset remains permanently locked as the primary frame across all themes, disabling automated background swapping for that specific slot.
 ABOUT US SECTION: Clean split layout. Left side displays dynamic title and story text shifting with the theme. Right side shows a photo of the interior.
 3. DYNAMIC OFFERINGS SECTION (STRICT VERTICAL MENU LIST LAYOUT):
 - BAN ALL SINGLE-PRICE BLOCKS: The AI builder is strictly FORBIDDEN from rendering each column as a single giant card displaying only one generic title and one global price block.
