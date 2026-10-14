@@ -1,7 +1,7 @@
 # Universal Business Sales Demo Template
 
-**Version:** v1.0.5
-**Updated:** 14.10.2026 - 20:54 Uhr (Helsinki)
+**Version:** v1.0.7
+**Updated:** 14.10.2026 - 20:55 Uhr (Helsinki)
 
 ---
 
@@ -14,6 +14,11 @@ CRITICAL INLINE REQUIREMENT: You are strictly FORBIDDEN from building a separate
 SECTION 1: GLOBAL CONTROLS & DYNAMIC MULTI-THEME SWITCHER
 Language Switcher: Implement a prominent toggle button styled like a pill (tablette design) in the header. It must allow the user to instantly switch the entire website between English and Finnish. All text content must change based on the active language.
 Live Design Theme Switcher: Add a sleek floating theme switcher widget at the bottom corner of the screen. Toggling a theme must instantly update the visual color system AND dynamically swap BOTH the default section titles and the entire body text paragraphs underneath across the page to match the vibe and tone of that selected style.
+🚨 GLOBAL THEME CONTRAST & ACCESSIBILITY LAW (Strict WCAG 2.1 Compliance):
+The AI builder must implement an unbreakable programmatic contrast guard within the Theme Switcher engine. Toggling between any of the 6 distinct styles (including light, dark, underground, or neon look) MUST dynamically calculate and invert typography/button text colors to guarantee perfect visibility against their backgrounds.
+- RULE A (Dark Backdrops): Whenever a design theme utilizes a dark background (such as the Rock Cave, Neon Dive, or heavy charcoal schemes), ALL text blocks, including body copy, links, secondary titles, and category headers, MUST dynamically flip to brilliant white (#ffffff) or highly reflective silver (#f1f5f9). Dark grey or charcoal text on dark surfaces is strictly FORBIDDEN.
+- RULE B (Interactive Components / Buttons): For every button element, link capsule, or language switcher pill, the text color MUST dynamically contrast against the button's background fill color. If a button uses a bright, vibrant color (like Nordic Orange #ff6600 or modern purple #7c3aed), the font color must be hardcoded to maximum contrast (white text for deep/saturated button fills, deep charcoal text for neon/light button fills).
+- RULE C (Live Code Verification): Ensure that the conditional styles applied via Tailwind CSS or JS template strings programmatically bind text color classes (e.g., `text-white` or `text-slate-900`) directly to the active theme's background state.
 THEME CONFIGURATION SCHEMA: Generate 5 distinct visual styles plus 1 Underground/Alternative style. Register these themes so the floating theme switcher can toggle them dynamically:
 Theme 1: Modern Nordic Kallio
 Theme 2: Irish
