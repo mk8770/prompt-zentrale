@@ -405,7 +405,10 @@ function applyUpdate(db, { id, section, updateText }) {
   }
 
   updated.version = bumpVersion(current.version);
-  updated.lastUpdated = new Date().toISOString();
+  const prompt = updated;
+  const helsinkiTime = new Date().toLocaleString("en-US", { timeZone: "Europe/Helsinki" });
+  const updatedTimestamp = new Date(helsinkiTime).toISOString();
+  prompt.lastUpdated = updatedTimestamp;
   updated = orderPrompt(updated);
   next.prompts[index] = updated;
   validateDatabase(next);
